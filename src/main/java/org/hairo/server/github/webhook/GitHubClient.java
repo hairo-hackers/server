@@ -9,10 +9,19 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GitHubClient {
+
+    private final static Logger log = LoggerFactory.getLogger(GitHubClient.class);
+
+    @Value("${github.token}")
+    private String token;
+
 
     public Set<String> getAllUsersForOrg(final @NonNull String orgName) {
         Objects.requireNonNull(orgName, "orgName must not be null");
@@ -22,7 +31,9 @@ public class GitHubClient {
         try {
             final URI uri = new URI("https://api.github.com/orgs/" + orgName + "/members");
             final JsonNode node = executeGet(uri);
-            return Set.of(node.findValuesAsText("login").toArray(new String[0]));
+            Set<String> result = Set.of(node.findValuesAsText("login").toArray(new String[0]));
+            log.info("Fetched {} users for organization: {}", result.size(), result);
+            return result;
         } catch (Exception e) {
             throw new RuntimeException("Error fetching users for org: " + orgName, e);
         }
@@ -85,6 +96,7 @@ public class GitHubClient {
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(uri)
                     .header("Accept", "application/vnd.github.v3+json")
+                    .header("Authorization", "Bearer " + token)
                     .header("User-Agent", "hAIro-Server")
                     .build();
             final String body = client.sendAsync(request, java.net.http.HttpResponse.BodyHandlers.ofString())
