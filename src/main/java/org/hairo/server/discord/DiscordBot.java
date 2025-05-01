@@ -44,7 +44,7 @@ public class DiscordBot {
                 .build();
     }
 
-    public void sendMessageToChannel(String message) {
+    public void sendMessageToChannel(String channelId, String message) {
         final CompletableFuture<Void> future = new CompletableFuture<>();
         final JDA jda = jdaReference.get();
         if (jda != null) {

@@ -20,6 +20,9 @@ public class VertesiaClient {
     @Value("${vertesia.token}")
     private String token;
 
+    @Value("${discord.channel.coc}")
+    private String discordChannelId;
+
     private final DiscordBot discordBot;
 
     public VertesiaClient(DiscordBot discordBot) {
@@ -39,7 +42,7 @@ public class VertesiaClient {
                     bodyNode.toPrettyString());
             final String status = json.get("result").get("status").asText();
             final String description = json.get("result").get("comment").asText();
-            discordBot.sendMessageToChannel(
+            discordBot.sendMessageToChannel(discordChannelId,
                     "@everyone\nCode of Conduct Check for " + source + ":\n Result: " + status + "\nDescription: "
                             + description);
         } catch (Exception e) {

@@ -8,12 +8,18 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class ContributionHandler {
 
     private final static Logger log = LoggerFactory.getLogger(ContributionHandler.class);
+
+    public static final String HAIRO_HACKERS_ORG = "hairo-hackers";
+
+    @Value("${discord.channel.maintainers}")
+    private String discordChannelId;
 
     private final GitHubClient gitHubClient;
 
@@ -27,11 +33,11 @@ public class ContributionHandler {
 
     public void handleContribution(String title, String author, URI contributionUri) {
         log.info("Handling contribution: '{}' from '{}'", title, author);
-        final boolean contributor = !gitHubClient.getAllUsersForOrg("hairo-hackers").contains(author);
+        final boolean contributor = !gitHubClient.getAllUsersForOrg(HAIRO_HACKERS_ORG).contains(author);
         if (contributor) {
             final String message = "New contribution by " + author + ": " + title + "\n" +
                     "View it here: " + contributionUri.toString();
-            discordBot.sendMessageToChannel(message);
+            discordBot.sendMessageToChannel(discordChannelId, message);
         }
     }
 }
