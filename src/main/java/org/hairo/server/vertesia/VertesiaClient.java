@@ -70,6 +70,7 @@ public class VertesiaClient {
             final ObjectNode dataNode = objectMapper.createObjectNode();
             dataNode.put("github_json_title", githubJson.get("issue").get("title").asText());
             dataNode.put("github_json_summary", githubJson.get("issue").get("body").asText());
+
             final JsonNode json = executePost("Issue_Evaluation", dataNode);
             final JsonNode results = json.get("result");
             final String issueTitle = results.get("title").asText();
@@ -79,18 +80,21 @@ public class VertesiaClient {
             String discordMessage =
                     "New Issue Opened: " + issueTitle + "\nSummary: " + issueSummary + "\nRecommended Contributors: ";
 
+            Boolean goodFirstIssue = false;
             if (recommendedContributors != null && recommendedContributors.isArray()) {
                 for (JsonNode item : recommendedContributors) {
                     final String contributorName = item.toString();
                     discordMessage += contributorName + ", ";
 
                     if (contributorName == "New Dev") {
-                        return true;
+                        goodFirstIssue = true;
                     }
                 }
             }
 
-            return false;
+            discordBot.sendMessageToChannel(discordChannelId, discordMessage);
+            return goodFirstIssue;
+
         } catch (Exception e) {
             throw new RuntimeException("Error setting issue complexity", e);
         }
