@@ -3,6 +3,7 @@ package org.hairo.server.github.webhook;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Objects;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,28 +50,32 @@ public class GithubWebhookEndpoint {
         }
     }
 
-    private String getAction(final JsonNode jsonNode) {
+    private String getAction(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
         if (jsonNode.has("action")) {
             return jsonNode.get("action").asText();
         }
         throw new IllegalArgumentException("Action not found in JSON");
     }
 
-    private String getOrgName(final JsonNode jsonNode) {
+    private String getOrgName(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
         if (jsonNode.has("organization") && jsonNode.get("organization").has("login")) {
             return jsonNode.get("organization").get("login").asText();
         }
         throw new IllegalArgumentException("Repository full name not found in JSON");
     }
 
-    private String getRepoName(final JsonNode jsonNode) {
+    private String getRepoName(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
         if (jsonNode.has("repository") && jsonNode.get("repository").has("name")) {
             return jsonNode.get("repository").get("name").asText();
         }
         throw new IllegalArgumentException("Repository full name not found in JSON");
     }
 
-    private String getDiscussionId(final JsonNode jsonNode) {
+    private String getDiscussionId(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
         if (jsonNode.has("discussion") && jsonNode.get("discussion").has("number")) {
             return jsonNode.get("discussion").get("number").asText();
         }

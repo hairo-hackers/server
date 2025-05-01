@@ -1,4 +1,6 @@
 package org.hairo.server.github.webhook;
 
-public record DiscussionCreatedEvent(String org, String repo, String discussionId) {
+import org.jspecify.annotations.NonNull;
+
+public record DiscussionCreatedEvent(@NonNull String org, @NonNull String repo, @NonNull String discussionId) {
 }
