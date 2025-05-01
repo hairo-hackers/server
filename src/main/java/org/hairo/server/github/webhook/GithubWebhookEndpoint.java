@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class GithubWebhookEndpoint {
 
     private final static Logger log = LoggerFactory.getLogger(GithubWebhookEndpoint.class);
+
     public static final String HUB_EVENT = "X-GitHub-Event";
 
     private final CommentHandler commentHandler;
@@ -123,22 +124,6 @@ public class GithubWebhookEndpoint {
             return jsonNode.get("comment").get("body").asText();
         }
         throw new IllegalArgumentException("comment not found in JSON");
-    }
-
-    private String getOrgName(final @NonNull JsonNode jsonNode) {
-        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
-        if (jsonNode.has("organization") && jsonNode.get("organization").has("login")) {
-            return jsonNode.get("organization").get("login").asText();
-        }
-        throw new IllegalArgumentException("Repository full name not found in JSON");
-    }
-
-    private String getRepoName(final @NonNull JsonNode jsonNode) {
-        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
-        if (jsonNode.has("repository") && jsonNode.get("repository").has("name")) {
-            return jsonNode.get("repository").get("name").asText();
-        }
-        throw new IllegalArgumentException("Repository full name not found in JSON");
     }
 
     private URI getDiscussionUrl(final @NonNull JsonNode jsonNode) {
