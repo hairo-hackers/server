@@ -100,7 +100,7 @@ public class VertesiaClient {
                 }
             }
 
-            discordBot.sendMessageToChannel(issuesChannel, discordMessage);
+            discordBot.sendMessageToChannel(issuesChannel, discordMessage + "\n" + source);
             return goodFirstIssue;
 
         } catch (Exception e) {
