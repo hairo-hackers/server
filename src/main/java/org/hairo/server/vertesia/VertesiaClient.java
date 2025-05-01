@@ -92,6 +92,7 @@ public class VertesiaClient {
     }
 
     private JsonNode executePost(final String interaction, JsonNode data) {
+        log.info("Executing interaction: {}", interaction);
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
             final ObjectNode bodyNode = objectMapper.createObjectNode();
