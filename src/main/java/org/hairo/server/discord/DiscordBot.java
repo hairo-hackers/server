@@ -21,9 +21,6 @@ public class DiscordBot {
     @Value("${discord.token}")
     private String token;
 
-    @Value("${discord.channelId}")
-    private String channelId;
-
     private final AtomicReference<JDA> jdaReference = new AtomicReference<JDA>();
 
     @PostConstruct

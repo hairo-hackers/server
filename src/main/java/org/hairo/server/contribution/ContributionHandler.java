@@ -1,9 +1,8 @@
 package org.hairo.server.contribution;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.Objects;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import org.hairo.server.discord.DiscordBot;
 import org.hairo.server.github.webhook.GitHubClient;
 import org.hairo.server.vertesia.VertesiaClient;
@@ -53,7 +52,7 @@ public class ContributionHandler {
                 discordBot.sendMessageToChannel(discordChannelId, message);
             }
         }
-        vertesiaClient.checkUserScore(author);
+        //vertesiaClient.checkUserScore(author);
     }
 
     public void handleIssueComplexity(JsonNode githubJson, URI contributionUri) {
@@ -63,10 +62,10 @@ public class ContributionHandler {
             final String repoFullName = githubJson.get("repository").get("full_name").toString();
             final int issueNumber = githubJson.get("issue").get("number").asInt();
             gitHubClient.setIssueLabel("""
-                                       {
-                                         "labels": ["good first issue"]
-                                       }
-                                       """, repoFullName, issueNumber);
+                    {
+                      "labels": ["good first issue"]
+                    }
+                    """, repoFullName, issueNumber);
 
         }
     }

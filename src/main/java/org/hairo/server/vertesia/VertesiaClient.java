@@ -25,7 +25,13 @@ public class VertesiaClient {
     private String token;
 
     @Value("${discord.channel.coc}")
-    private String discordChannelId;
+    private String codeOfConductChannel;
+
+    @Value("${discord.channel.maintainers}")
+    private String maintainerChannel;
+
+    @Value("${discord.channel.issues}")
+    private String issuesChannel;
 
     private final DiscordBot discordBot;
 
@@ -92,7 +98,7 @@ public class VertesiaClient {
                 }
             }
 
-            discordBot.sendMessageToChannel(discordChannelId, discordMessage + "\n" + source);
+            discordBot.sendMessageToChannel(discordChannelId, discordMessage);
             return goodFirstIssue;
 
         } catch (Exception e) {
