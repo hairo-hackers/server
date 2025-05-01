@@ -103,11 +103,12 @@ public class VertesiaClient {
         }
     }
 
-    public void setIssueComplexity(JsonNode githubJson, URI source) {
+    public void setIssueComplexity(String title, String summary, URI source) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
             final ObjectNode dataNode = objectMapper.createObjectNode();
-            dataNode.put("github_json", githubJson);
+            dataNode.put("github_json_title", title);
+            dataNode.put("github_json_summary", summary);
             final ObjectNode bodyNode = objectMapper.createObjectNode();
             bodyNode.put("interaction", "Issue_Evaluation");
             bodyNode.set("data", dataNode);
