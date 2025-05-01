@@ -44,14 +44,53 @@ public class GithubWebhookEndpoint {
                 final Comment titleComment = new Comment(content, url);
                 commentHandler.handleComment(titleComment);
             } else if (eventTypeEnum == GitHubWebhookEventTypes.DISCUSSION_COMMENT_CREATED) {
-                final String content = getDiscussionComment(jsonNode);
-                final URI url = getDiscussionCommentUrl(jsonNode);
+                final String content = getComment(jsonNode);
+                final URI url = getCommentUrl(jsonNode);
+                final Comment titleComment = new Comment(content, url);
+                commentHandler.handleComment(titleComment);
+            } else if (eventTypeEnum == GitHubWebhookEventTypes.ISSUE_CREATED) {
+                final String title = getIssueTitle(jsonNode);
+                final String content = title + "\n" + getIssueText(jsonNode);
+                final URI url = getIssueUrl(jsonNode);
+                final Comment titleComment = new Comment(content, url);
+                commentHandler.handleComment(titleComment);
+            } else if (eventTypeEnum == GitHubWebhookEventTypes.ISSUE_COMMENT_CREATED) {
+                final String content = getComment(jsonNode);
+                final URI url = getCommentUrl(jsonNode);
                 final Comment titleComment = new Comment(content, url);
                 commentHandler.handleComment(titleComment);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error in Github webhook", e);
         }
+    }
+
+    private URI getIssueUrl(JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("issue") && jsonNode.get("issue").has("html_url")) {
+            try {
+                return new URI(jsonNode.get("issue").get("html_url").asText());
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing URL", e);
+            }
+        }
+        throw new IllegalArgumentException("url not found in JSON");
+    }
+
+    private String getIssueTitle(JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("issue") && jsonNode.get("issue").has("title")) {
+            return jsonNode.get("issue").get("title").asText();
+        }
+        throw new IllegalArgumentException("title not found in JSON");
+    }
+
+    private String getIssueText(JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("issue") && jsonNode.get("issue").has("body")) {
+            return jsonNode.get("issue").get("body").asText();
+        }
+        throw new IllegalArgumentException("title not found in JSON");
     }
 
     private String getAction(final @NonNull JsonNode jsonNode) {
@@ -78,7 +117,7 @@ public class GithubWebhookEndpoint {
         throw new IllegalArgumentException("comment not found in JSON");
     }
 
-    private String getDiscussionComment(final @NonNull JsonNode jsonNode) {
+    private String getComment(final @NonNull JsonNode jsonNode) {
         Objects.requireNonNull(jsonNode, "jsonNode must not be null");
         if (jsonNode.has("comment") && jsonNode.get("comment").has("body")) {
             return jsonNode.get("comment").get("body").asText();
@@ -114,7 +153,7 @@ public class GithubWebhookEndpoint {
         throw new IllegalArgumentException("url not found in JSON");
     }
 
-    private URI getDiscussionCommentUrl(final @NonNull JsonNode jsonNode) {
+    private URI getCommentUrl(final @NonNull JsonNode jsonNode) {
         Objects.requireNonNull(jsonNode, "jsonNode must not be null");
         if (jsonNode.has("comment") && jsonNode.get("comment").has("html_url")) {
             try {

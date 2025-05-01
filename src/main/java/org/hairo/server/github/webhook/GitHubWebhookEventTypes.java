@@ -4,6 +4,8 @@ import java.util.Optional;
 
 public enum GitHubWebhookEventTypes {
 
+    ISSUE_CREATED("issue", "opened"),
+    ISSUE_COMMENT_CREATED("issue_comment", "created"),
     DISCUSSION_CREATED("discussion", "created"),
     DISCUSSION_COMMENT_CREATED("discussion_comment", "created");
 
