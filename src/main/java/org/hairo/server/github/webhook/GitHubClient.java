@@ -21,7 +21,7 @@ public class GitHubClient {
 
     @Value("${github.token}")
     private String token;
-    
+
     public Set<String> getAllUsersForOrg(final @NonNull String orgName) {
         Objects.requireNonNull(orgName, "orgName must not be null");
         if (orgName.isBlank()) {
@@ -113,5 +113,30 @@ public class GitHubClient {
         }
     }
 
+    public JsonNode doGraphQlQueryForFirstContribution() {
+        try {
+            final HttpClient client = HttpClient.newHttpClient();
+            final HttpRequest request = HttpRequest.newBuilder()
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(
+                            "{\"query\":\"query CommitCount($q:String!){search(query:$q,type:COMMIT){commitCount}}\",\"variables\":{\"q\":\"repo:hiero-ledger/* author:alice-blockchain committer-date:>=2024-05-01\"}}"))
+                    .uri(new URI("https://api.github.com/graphql"))
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .header("Authorization", "Bearer " + token)
+                    .header("User-Agent", "hAIro-Server")
+                    .build();
+            final String body = client.sendAsync(request, java.net.http.HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() == 200) {
+                            return response.body();
+                        } else {
+                            throw new RuntimeException("Failed to fetch discussion content: " + response.statusCode());
+                        }
+                    }).get(10, TimeUnit.SECONDS);
+            final ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readTree(body);
+        } catch (Exception e) {
+            throw new RuntimeException("Error executing GraphQL request", e);
+        }
+    }
 
 }

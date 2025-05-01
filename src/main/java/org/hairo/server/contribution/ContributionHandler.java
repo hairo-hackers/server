@@ -1,5 +1,6 @@
 package org.hairo.server.contribution;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.Objects;
 import org.hairo.server.discord.DiscordBot;
@@ -38,6 +39,9 @@ public class ContributionHandler {
             final String message = "New contribution by " + author + ": " + title + "\n" +
                     "View it here: " + contributionUri.toString();
             discordBot.sendMessageToChannel(discordChannelId, message);
+
+            final JsonNode jsonNode = gitHubClient.doGraphQlQueryForFirstContribution();
+            log.info("GraphQL query result: {}", jsonNode);
         }
     }
 }
