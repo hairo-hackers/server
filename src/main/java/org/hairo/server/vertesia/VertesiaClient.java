@@ -2,6 +2,7 @@ package org.hairo.server.vertesia;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -27,13 +28,15 @@ public class VertesiaClient {
 
     public void checkCodeOfConduct(String message, URI source) {
         try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            final String body = objectMapper.createObjectNode()
-                    .put("interaction", "CodeOfConductCheck")
-                    .put("data", objectMapper.createObjectNode().put("message", message))
-                    .toPrettyString();
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final ObjectNode dataNode = objectMapper.createObjectNode();
+            dataNode.put("message", message);
+            final ObjectNode bodyNode = objectMapper.createObjectNode();
+            bodyNode.put("interaction", "CodeOfConductCheck");
+            bodyNode.set("data", dataNode);
             final JsonNode json = executePost(
-                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"), body);
+                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
+                    bodyNode.toPrettyString());
             final String status = json.get("result").get("status").asText();
             final String description = json.get("result").get("comment").asText();
             discordBot.sendMessageToChannel(
