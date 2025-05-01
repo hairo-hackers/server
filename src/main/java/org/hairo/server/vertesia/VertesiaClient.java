@@ -10,7 +10,6 @@ import java.net.http.HttpRequest.BodyPublishers;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.hairo.server.discord.DiscordBot;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,9 +40,7 @@ public class VertesiaClient {
             final ObjectNode bodyNode = objectMapper.createObjectNode();
             bodyNode.put("interaction", "CodeOfConductCheck");
             bodyNode.set("data", dataNode);
-            final JsonNode json = executePost(
-                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
-                    bodyNode.toPrettyString());
+            final JsonNode json = executePost(bodyNode.toPrettyString());
             final String status = json.get("result").get("status").asText();
             final String description = json.get("result").get("comment").asText();
             discordBot.sendMessageToChannel(discordChannelId,
@@ -97,9 +94,7 @@ public class VertesiaClient {
             final ObjectNode bodyNode = objectMapper.createObjectNode();
             bodyNode.put("interaction", "Contributor_profile");
             bodyNode.put("data", content);
-            final JsonNode json = executePost(
-                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
-                    content);
+            final JsonNode json = executePost(content);
             log.info("User score check result: {}", json.toPrettyString());
         } catch (Exception e) {
             throw new RuntimeException("Error checking code of conduct", e);
@@ -115,9 +110,7 @@ public class VertesiaClient {
             final ObjectNode bodyNode = objectMapper.createObjectNode();
             bodyNode.put("interaction", "Issue_Evaluation");
             bodyNode.set("data", dataNode);
-            final JsonNode json = executePost(
-                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
-                    bodyNode.toPrettyString());
+            final JsonNode json = executePost(bodyNode.toPrettyString());
             final JsonNode results = json.get("result");
             final String issueTitle = results.get("title").asText();
             final String issueSummary = results.get("summary").asText();
@@ -138,12 +131,11 @@ public class VertesiaClient {
         }
     }
 
-    private JsonNode executePost(final @NonNull URI uri, String body) {
-        Objects.requireNonNull(uri, "URI must not be null");
+    private JsonNode executePost(String body) {
         try {
             final HttpClient client = HttpClient.newHttpClient();
             final HttpRequest request = HttpRequest.newBuilder()
-                    .uri(uri)
+                    .uri(new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"))
                     .POST(BodyPublishers.ofString(body))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + token)
@@ -159,7 +151,7 @@ public class VertesiaClient {
             final ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readTree(result);
         } catch (Exception e) {
-            throw new RuntimeException("Error executing request to " + uri, e);
+            throw new RuntimeException("Error executing request", e);
         }
     }
 }
