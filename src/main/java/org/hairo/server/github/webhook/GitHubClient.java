@@ -115,10 +115,16 @@ public class GitHubClient {
 
     public JsonNode doGraphQlQueryForFirstContribution() {
         try {
+            final String query = """
+                    {
+                      "query": "query CommitCount($q:String!){search(query:$q,type:COMMIT){commitCount}}",
+                      "variables": {
+                        "q": "repo:hairo-hackers/* author:alice-blockchain committer-date:>=2024-05-01"
+                      }
+                    }""";
             final HttpClient client = HttpClient.newHttpClient();
             final HttpRequest request = HttpRequest.newBuilder()
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(
-                            "{\"query\":\"query CommitCount($q:String!){search(query:$q,type:COMMIT){commitCount}}\",\"variables\":{\"q\":\"repo:hiero-ledger/* author:alice-blockchain committer-date:>=2024-05-01\"}}"))
+                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(query))
                     .uri(new URI("https://api.github.com/graphql"))
                     .header("Accept", "application/vnd.github.v3+json")
                     .header("Authorization", "Bearer " + token)

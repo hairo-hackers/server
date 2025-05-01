@@ -1,0 +1,6 @@
+{
+  "query": "query CommitCount($q:String!){search(query:$q,type:COMMIT){commitCount}}",
+  "variables": {
+    "q": "repo:hiero-ledger/* author:alice-blockchain committer-date:>=2024-05-01"
+  }
+}

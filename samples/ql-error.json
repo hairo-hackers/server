@@ -1,0 +1,42 @@
+{
+  "errors": [
+    {
+      "path": [
+        "query CommitCount",
+        "search",
+        "type"
+      ],
+      "extensions": {
+        "code": "argumentLiteralsIncompatible",
+        "typeName": "Field",
+        "argumentName": "type"
+      },
+      "locations": [
+        {
+          "line": 1,
+          "column": 31
+        }
+      ],
+      "message": "Argument 'type' on Field 'search' has an invalid value (COMMIT). Expected type 'SearchType!'."
+    },
+    {
+      "path": [
+        "query CommitCount",
+        "search",
+        "commitCount"
+      ],
+      "extensions": {
+        "code": "undefinedField",
+        "typeName": "SearchResultItemConnection",
+        "fieldName": "commitCount"
+      },
+      "locations": [
+        {
+          "line": 1,
+          "column": 60
+        }
+      ],
+      "message": "Field 'commitCount' doesn't exist on type 'SearchResultItemConnection'"
+    }
+  ]
+}
