@@ -118,8 +118,7 @@ public class GitHubClient {
             final HttpClient client = HttpClient.newHttpClient();
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI(
-                            "https://api.github.com/search/commits?q=repo:hairo-hackers/server+author:" + author
-                                    + "+committer-date:>=2023-05-01"))
+                            "https://api.github.com/search/commits?q=repo:hairo-hackers/server+author:" + author))
                     .header("Accept", "application/vnd.github.v3+json")
                     .header("Authorization", "Bearer " + token)
                     .header("User-Agent", "hAIro-Server")

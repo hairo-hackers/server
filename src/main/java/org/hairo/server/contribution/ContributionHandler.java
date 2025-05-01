@@ -1,9 +1,8 @@
 package org.hairo.server.contribution;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.Objects;
-
-import com.fasterxml.jackson.databind.JsonNode;
 import org.hairo.server.discord.DiscordBot;
 import org.hairo.server.github.webhook.GitHubClient;
 import org.hairo.server.vertesia.VertesiaClient;
@@ -31,7 +30,8 @@ public class ContributionHandler {
     private final VertesiaClient vertesiaClient;
 
     @Autowired
-    public ContributionHandler(final @NonNull GitHubClient gitHubClient, final @NonNull DiscordBot discordBot, final @NonNull VertesiaClient vertesiaClient) {
+    public ContributionHandler(final @NonNull GitHubClient gitHubClient, final @NonNull DiscordBot discordBot,
+            final @NonNull VertesiaClient vertesiaClient) {
         this.gitHubClient = Objects.requireNonNull(gitHubClient, "gitHubClient must not be null");
         this.discordBot = Objects.requireNonNull(discordBot, "discordBot must not be null");
         this.vertesiaClient = Objects.requireNonNull(vertesiaClient, "vertesiaClient must not be null");
@@ -50,9 +50,9 @@ public class ContributionHandler {
                 final String message = "First contribution by " + author + ": " + title + "\n" +
                         "View it here: " + contributionUri.toString();
                 discordBot.sendMessageToChannel(discordChannelId, message);
-                vertesiaClient.checkUserScore(author);
             }
         }
+        vertesiaClient.checkUserScore(author);
     }
 
     public void handleIssueComplexity(JsonNode githubJson, URI contributionUri) {
