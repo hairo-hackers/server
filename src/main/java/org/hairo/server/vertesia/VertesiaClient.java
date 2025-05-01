@@ -50,7 +50,7 @@ public class VertesiaClient {
             final JsonNode json = executePost("CodeOfConductCheck", dataNode);
             final String status = json.get("result").get("status").asText();
             final String description = json.get("result").get("comment").asText();
-            discordBot.sendMessageToChannel(discordChannelId,
+            discordBot.sendMessageToChannel(codeOfConductChannel,
                     "@everyone\nCode of Conduct Check for " + source + ":\n Result: " + status + "\nDescription: "
                             + description);
         } catch (Exception e) {
@@ -63,7 +63,7 @@ public class VertesiaClient {
             final JsonNode data = gitHubClient.getUserInfo(author);
             final JsonNode json = executePost("Contributor_profile", data);
             log.info("User score check result: {}", json.toPrettyString());
-            discordBot.sendMessageToChannel(discordChannelId,
+            discordBot.sendMessageToChannel(maintainerChannel,
                     "User Score: " + json.toPrettyString());
         } catch (Exception e) {
             throw new RuntimeException("Error checking code of conduct", e);
@@ -98,7 +98,7 @@ public class VertesiaClient {
                 }
             }
 
-            discordBot.sendMessageToChannel(discordChannelId, discordMessage);
+            discordBot.sendMessageToChannel(issuesChannel, discordMessage);
             return goodFirstIssue;
 
         } catch (Exception e) {
