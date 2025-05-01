@@ -91,10 +91,10 @@ public class VertesiaClient {
             Boolean goodFirstIssue = false;
             if (recommendedContributors != null && recommendedContributors.isArray()) {
                 for (JsonNode item : recommendedContributors) {
-                    final String contributorName = item.toString();
+                    final String contributorName = item.asText()
                     discordMessage += contributorName + ", ";
 
-                    if (contributorName == "New Dev") {
+                    if (Objects.equals("New Dev", contributorName)) {
                         goodFirstIssue = true;
                     }
                 }
