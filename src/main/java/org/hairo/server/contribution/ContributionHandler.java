@@ -58,12 +58,13 @@ public class ContributionHandler {
     public void handleIssueComplexity(JsonNode githubJson, URI contributionUri) {
         log.info("Handling new issue: '{}'", githubJson.get("issue").get("title"));
         if (vertesiaClient.determineGoodFirstIssue(githubJson, contributionUri)) {
-            discordBot.sendMessageToChannel(discordChannelId, "@everyone NEW GOOD FIRST ISSUE DETECTED! " + contributionUri.toString());
-            final String repoFullName = githubJson.get("repository").get("full_name").toString();
+            discordBot.sendMessageToChannel(discordChannelId,
+                    "@everyone NEW GOOD FIRST ISSUE DETECTED! " + contributionUri.toString());
+            final String repoFullName = githubJson.get("repository").get("full_name").asText();
             final int issueNumber = githubJson.get("issue").get("number").asInt();
             gitHubClient.setIssueLabel("""
                     {
-                      "labels": ["good first issue"]
+                      "labels": ["good first issue candidate"]
                     }
                     """, repoFullName, issueNumber);
 
