@@ -81,7 +81,7 @@ public class GithubWebhookEndpoint {
                     final Comment titleComment = new Comment(content, url);
                     commentHandler.handleComment(titleComment);
                     contributionHandler.handleContribution(getIssueTitle(jsonNode), getIssueAuthor(jsonNode), url);
-                    contributionHandler.handleIssueComplexity(jsonNode, url);
+                    contributionHandler.handleIssueComplexity(getIssueTitle(jsonNode), getIssueText(jsonNode), url);
                 } else if (eventTypeEnum == ISSUE_COMMENT_CREATED) {
                     final String content = getComment(jsonNode);
                     final URI url = getCommentUrl(jsonNode);
