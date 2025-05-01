@@ -39,9 +39,8 @@ public class ContributionHandler {
             final String message = "New contribution by " + author + ": " + title + "\n" +
                     "View it here: " + contributionUri.toString();
             discordBot.sendMessageToChannel(discordChannelId, message);
-
-            final JsonNode jsonNode = gitHubClient.doGraphQlQueryForFirstContribution();
-            log.info("GraphQL query result: {}", jsonNode);
         }
+        final JsonNode jsonNode = gitHubClient.doGraphQlQueryForFirstContribution();
+        log.info("GraphQL query result: {}", jsonNode);
     }
 }
