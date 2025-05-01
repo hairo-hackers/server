@@ -2,9 +2,15 @@ package org.hairo.server.github.webhook;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -88,6 +94,30 @@ public class GitHubClient {
         }
     }
 
+    private void executePost(final @NonNull URI uri, final @NonNull String payload) {
+        try {
+            final HttpClient client = HttpClient.newHttpClient();
+            final HttpRequest request = HttpRequest.newBuilder()
+                    .uri(uri)
+                    .header("Authorization", "Bearer " + token)
+                    .header("Accept", "application/vnd.github+json")
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(payload))
+                    .build();
+            final String body = client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
+                    .thenApply(response -> {
+                        if (response.statusCode() == 200) {
+                            return response.body();
+                        } else {
+                            throw new RuntimeException("Failed to fetch discussion content: " + response.statusCode());
+                        }
+                    }).get(10, TimeUnit.SECONDS);
+            System.out.println(body);
+        } catch (Exception e) {
+            throw new RuntimeException("Error executing POST request to " + uri, e);
+        }
+    }
+
     private JsonNode executeGet(final @NonNull URI uri) {
         Objects.requireNonNull(uri, "URI must not be null");
         try {
@@ -148,6 +178,23 @@ public class GitHubClient {
             return executeGet(uri);
         } catch (Exception e) {
             throw new RuntimeException("Error fetching user info for: " + user, e);
+        }
+    }
+
+    public void setIssueLabel(String payload, String repoName, int issueNumber) {
+        Objects.requireNonNull(payload, "payload must not be null");
+        if (payload.isBlank()) {
+            throw new IllegalArgumentException("payload must not be blank");
+        }
+        try {
+            String apiUrl = String.format(
+                    "https://api.github.com/repos/%s/issues/%d/labels", repoName, issueNumber
+            );
+
+            final URI uri = new URI(apiUrl);
+            executePost(uri, payload);
+        } catch (Exception e) {
+            throw new RuntimeException("Error setting issue label for issue: " + issueNumber, e);
         }
     }
 }
