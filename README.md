@@ -1,3 +1,3 @@
 # server
-The hAIro hackers server
+The hAIro hackers server.
 
