@@ -1,6 +1,5 @@
 package org.hairo.server.contribution;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.Objects;
 import org.hairo.server.discord.DiscordBot;
@@ -57,6 +56,6 @@ public class ContributionHandler {
 
     public void handleIssueComplexity(String title, String summary, URI contributionUri) {
         log.info("Handling issue complexity: '{}' with summary '{}'", title, summary);
-        vertesiaClient.setIssueComplexity(title, summary, contributionUri);
+        vertesiaClient.setIssueComplexity(title, summary);
     }
 }
