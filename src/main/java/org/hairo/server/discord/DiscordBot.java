@@ -34,6 +34,7 @@ public class DiscordBot {
                 .addEventListeners(new ListenerAdapter() {
                     @Override
                     public void onReady(@NotNull ReadyEvent event) {
+                        log.info("Discord bot is ready!");
                         jdaReference.set(event.getJDA());
                         event.getJDA().getTextChannels().forEach(ch -> {
                             log.info("Available channel: " + ch.getName() + " → " + ch.getId());
