@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 public class CommentHandler {
 
     private final static Logger log = LoggerFactory.getLogger(CommentHandler.class);
-
+    
     public void handleComment(final @NonNull Comment comment) {
         Objects.requireNonNull(comment, "comment must not be null");
         log.info("Handling comment: '{}' from '{}'", comment.comment(), comment.source());
