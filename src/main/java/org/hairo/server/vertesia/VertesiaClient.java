@@ -2,6 +2,7 @@ package org.hairo.server.vertesia;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -47,6 +48,36 @@ public class VertesiaClient {
                             + description);
         } catch (Exception e) {
             throw new RuntimeException("Error checking code of conduct", e);
+        }
+    }
+
+    public void setIssueComplexity(JsonNode githubJson, URI source) {
+        try {
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final ObjectNode dataNode = objectMapper.createObjectNode();
+            dataNode.put("github_json", githubJson);
+            final ObjectNode bodyNode = objectMapper.createObjectNode();
+            bodyNode.put("interaction", "Issue_Evaluation");
+            bodyNode.set("data", dataNode);
+            final JsonNode json = executePost(
+                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
+                    bodyNode.toPrettyString());
+            final JsonNode results = json.get("result");
+            final String issueTitle = results.get("title").asText();
+            final String issueSummary = results.get("summary").asText();
+            final JsonNode recommendedContributors = results.get("recommended_contributors");
+
+            String discordMessage = "New Issue Opened: " + issueTitle + "\nSummary: " + issueSummary + "\nRecommended Contributors: ";
+
+            if (recommendedContributors != null && recommendedContributors.isArray()) {
+                for (JsonNode item : recommendedContributors) {
+                    discordMessage += item.toString() + ", ";
+                }
+            }
+
+            discordBot.sendMessageToChannel(discordChannelId, discordMessage);
+        } catch (Exception e) {
+            throw new RuntimeException("Error setting issue complexity", e);
         }
     }
 
