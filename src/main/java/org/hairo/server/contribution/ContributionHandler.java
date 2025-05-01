@@ -50,6 +50,7 @@ public class ContributionHandler {
                 final String message = "First contribution by " + author + ": " + title + "\n" +
                         "View it here: " + contributionUri.toString();
                 discordBot.sendMessageToChannel(discordChannelId, message);
+                vertesiaClient.checkUserScore(author);
             }
         }
     }

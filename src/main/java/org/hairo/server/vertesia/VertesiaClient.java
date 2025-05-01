@@ -2,7 +2,6 @@ package org.hairo.server.vertesia;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -12,11 +11,15 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import org.hairo.server.discord.DiscordBot;
 import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class VertesiaClient {
+
+    private final static Logger log = LoggerFactory.getLogger(VertesiaClient.class);
 
     @Value("${vertesia.token}")
     private String token;
@@ -51,6 +54,55 @@ public class VertesiaClient {
         }
     }
 
+    public void checkUserScore(String author) {
+        try {
+
+            String content = """
+                    {
+                        "login": "hendrikebbers",
+                        "id": 9443847,
+                        "node_id": "MDQ6VXNlcjk0NDM4NDc=",
+                        "avatar_url": "https://avatars.githubusercontent.com/u/9443847?v=4",
+                        "gravatar_id": "",
+                        "url": "https://api.github.com/users/hendrikebbers",
+                        "html_url": "https://github.com/hendrikebbers",
+                        "followers_url": "https://api.github.com/users/hendrikebbers/followers",
+                        "following_url": "https://api.github.com/users/hendrikebbers/following{/other_user}",
+                        "gists_url": "https://api.github.com/users/hendrikebbers/gists{/gist_id}",
+                        "starred_url": "https://api.github.com/users/hendrikebbers/starred{/owner}{/repo}",
+                        "subscriptions_url": "https://api.github.com/users/hendrikebbers/subscriptions",
+                        "organizations_url": "https://api.github.com/users/hendrikebbers/orgs",
+                        "repos_url": "https://api.github.com/users/hendrikebbers/repos",
+                        "events_url": "https://api.github.com/users/hendrikebbers/events{/privacy}",
+                        "received_events_url": "https://api.github.com/users/hendrikebbers/received_events",
+                        "type": "User",
+                        "user_view_type": "public",
+                        "site_admin": false,
+                        "name": "Hendrik Ebbers",
+                        "company": "Open Elements GmbH @openelements ",
+                        "blog": "https://open-elements.com",
+                        "location": "Dortmund, Germany",
+                        "email": null,
+                        "hireable": null,
+                        "bio": "Founder of @openelements - @eclipse-ee4j @adoptium and @AdoptOpenJDK member and Java Champion - working on @hiero-ledger and @hashgraph",
+                        "twitter_username": "hendrikEbbers",
+                        "public_repos": 99,
+                        "public_gists": 265,
+                        "followers": 222,
+                        "following": 73,
+                        "created_at": "2014-10-29T08:04:30Z",
+                        "updated_at": "2025-04-28T15:21:31Z"
+                    }""";
+
+            final JsonNode json = executePost(
+                    new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
+                    content);
+            log.info("User score check result: {}", json.toPrettyString());
+        } catch (Exception e) {
+            throw new RuntimeException("Error checking code of conduct", e);
+        }
+    }
+
     public void setIssueComplexity(JsonNode githubJson, URI source) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
@@ -67,7 +119,8 @@ public class VertesiaClient {
             final String issueSummary = results.get("summary").asText();
             final JsonNode recommendedContributors = results.get("recommended_contributors");
 
-            String discordMessage = "New Issue Opened: " + issueTitle + "\nSummary: " + issueSummary + "\nRecommended Contributors: ";
+            String discordMessage =
+                    "New Issue Opened: " + issueTitle + "\nSummary: " + issueSummary + "\nRecommended Contributors: ";
 
             if (recommendedContributors != null && recommendedContributors.isArray()) {
                 for (JsonNode item : recommendedContributors) {
