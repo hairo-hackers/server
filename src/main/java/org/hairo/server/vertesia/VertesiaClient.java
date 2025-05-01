@@ -37,10 +37,7 @@ public class VertesiaClient {
             final ObjectMapper objectMapper = new ObjectMapper();
             final ObjectNode dataNode = objectMapper.createObjectNode();
             dataNode.put("message", message);
-            final ObjectNode bodyNode = objectMapper.createObjectNode();
-            bodyNode.put("interaction", "CodeOfConductCheck");
-            bodyNode.set("data", dataNode);
-            final JsonNode json = executePost(bodyNode.toPrettyString());
+            final JsonNode json = executePost("CodeOfConductCheck", dataNode);
             final String status = json.get("result").get("status").asText();
             final String description = json.get("result").get("comment").asText();
             discordBot.sendMessageToChannel(discordChannelId,
@@ -53,7 +50,6 @@ public class VertesiaClient {
 
     public void checkUserScore(String author) {
         try {
-
             String content = """
                     {
                         "login": "hendrikebbers",
@@ -91,10 +87,8 @@ public class VertesiaClient {
                         "updated_at": "2025-04-28T15:21:31Z"
                     }""";
             final ObjectMapper objectMapper = new ObjectMapper();
-            final ObjectNode bodyNode = objectMapper.createObjectNode();
-            bodyNode.put("interaction", "Contributor_profile");
-            bodyNode.put("data", content);
-            final JsonNode json = executePost(content);
+            final JsonNode data = objectMapper.readTree(content);
+            final JsonNode json = executePost("Contributor_profile", data);
             log.info("User score check result: {}", json.toPrettyString());
         } catch (Exception e) {
             throw new RuntimeException("Error checking code of conduct", e);
@@ -107,10 +101,7 @@ public class VertesiaClient {
             final ObjectNode dataNode = objectMapper.createObjectNode();
             dataNode.put("github_json_title", title);
             dataNode.put("github_json_summary", summary);
-            final ObjectNode bodyNode = objectMapper.createObjectNode();
-            bodyNode.put("interaction", "Issue_Evaluation");
-            bodyNode.set("data", dataNode);
-            final JsonNode json = executePost(bodyNode.toPrettyString());
+            final JsonNode json = executePost("Issue_Evaluation", dataNode);
             final JsonNode results = json.get("result");
             final String issueTitle = results.get("title").asText();
             final String issueSummary = results.get("summary").asText();
@@ -131,12 +122,16 @@ public class VertesiaClient {
         }
     }
 
-    private JsonNode executePost(String body) {
+    private JsonNode executePost(final String interaction, JsonNode data) {
         try {
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final ObjectNode bodyNode = objectMapper.createObjectNode();
+            bodyNode.put("interaction", interaction);
+            bodyNode.set("data", data);
             final HttpClient client = HttpClient.newHttpClient();
             final HttpRequest request = HttpRequest.newBuilder()
                     .uri(new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"))
-                    .POST(BodyPublishers.ofString(body))
+                    .POST(BodyPublishers.ofString(bodyNode.toPrettyString()))
                     .header("Content-Type", "application/json")
                     .header("Authorization", "Bearer " + token)
                     .build();
@@ -148,7 +143,6 @@ public class VertesiaClient {
                             throw new RuntimeException("Failed to fetch: " + response.statusCode());
                         }
                     }).get(10, TimeUnit.SECONDS);
-            final ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readTree(result);
         } catch (Exception e) {
             throw new RuntimeException("Error executing request", e);
