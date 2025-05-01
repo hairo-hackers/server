@@ -55,7 +55,8 @@ public class ContributionHandler {
         }
     }
 
-    public void handleIssueComplexity(JsonNode githubJson, URI contributionUri) {
-        vertesiaClient.setIssueComplexity(githubJson, contributionUri);
+    public void handleIssueComplexity(String title, String summary, URI contributionUri) {
+        log.info("Handling issue complexity: '{}' with summary '{}'", title, summary);
+        vertesiaClient.setIssueComplexity(title, summary, contributionUri);
     }
 }
