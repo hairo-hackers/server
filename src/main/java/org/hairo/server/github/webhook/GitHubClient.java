@@ -187,9 +187,7 @@ public class GitHubClient {
             throw new IllegalArgumentException("payload must not be blank");
         }
         try {
-            String apiUrl = String.format(
-                    "https://api.github.com/repos/%s/issues/%d/labels", repoName, issueNumber
-            );
+            String apiUrl = "https://api.github.com/repos/" + repoName + "/issues/" + issueNumber + "/labels";
 
             final URI uri = new URI(apiUrl);
             executePost(uri, payload);
