@@ -1,6 +1,5 @@
 package org.hairo.server.discord;
 
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import net.dv8tion.jda.api.JDA;
@@ -9,7 +8,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
-import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +16,9 @@ public class DiscordBot {
 
     @Value("${discord.token}")
     private String token;
+
+    @Value("${discord.channelId}")
+    private String channelId;
 
     private final AtomicReference<JDA> jdaReference = new AtomicReference<JDA>();
 
@@ -32,8 +33,7 @@ public class DiscordBot {
                 .build();
     }
 
-    public void sendMessageToChannel(@NonNull final String channelId, String message) {
-        Objects.requireNonNull(channelId, "Channel ID must not be null");
+    public void sendMessageToChannel(String message) {
         final CompletableFuture<Void> future = new CompletableFuture<>();
         final JDA jda = jdaReference.get();
         if (jda != null) {
