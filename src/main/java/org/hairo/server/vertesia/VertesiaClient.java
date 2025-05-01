@@ -93,7 +93,10 @@ public class VertesiaClient {
                         "created_at": "2014-10-29T08:04:30Z",
                         "updated_at": "2025-04-28T15:21:31Z"
                     }""";
-
+            final ObjectMapper objectMapper = new ObjectMapper();
+            final ObjectNode bodyNode = objectMapper.createObjectNode();
+            bodyNode.put("interaction", "Contributor_profile");
+            bodyNode.put("data", content);
             final JsonNode json = executePost(
                     new URI("https://studio-server-production.api.vertesia.io/api/v1/execute"),
                     content);
@@ -103,7 +106,7 @@ public class VertesiaClient {
         }
     }
 
-    public void setIssueComplexity(String title, String summary, URI source) {
+    public void setIssueComplexity(String title, String summary) {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
             final ObjectNode dataNode = objectMapper.createObjectNode();
@@ -150,13 +153,13 @@ public class VertesiaClient {
                         if (response.statusCode() == 200) {
                             return response.body();
                         } else {
-                            throw new RuntimeException("Failed to fetch discussion content: " + response.statusCode());
+                            throw new RuntimeException("Failed to fetch: " + response.statusCode());
                         }
                     }).get(10, TimeUnit.SECONDS);
             final ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.readTree(result);
         } catch (Exception e) {
-            throw new RuntimeException("Error executing GET request to " + uri, e);
+            throw new RuntimeException("Error executing request to " + uri, e);
         }
     }
 }
