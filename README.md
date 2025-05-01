@@ -1,4 +1,4 @@
 # server
 The hAIro hackers server
 
-mn ,m 
+Please vote for the HCS - TTS Project - Thank you!
