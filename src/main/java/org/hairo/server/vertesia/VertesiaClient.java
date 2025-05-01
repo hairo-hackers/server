@@ -50,9 +50,11 @@ public class VertesiaClient {
             final JsonNode json = executePost("CodeOfConductCheck", dataNode);
             final String status = json.get("result").get("status").asText();
             final String description = json.get("result").get("comment").asText();
-            discordBot.sendMessageToChannel(codeOfConductChannel,
-                    "@everyone\nCode of Conduct Check for " + source + ":\n Result: " + status + "\nDescription: "
-                            + description);
+            if (!Objects.equals("No Violation", status)) {
+                discordBot.sendMessageToChannel(codeOfConductChannel,
+                        "@everyone\nCode of Conduct Check for " + source + ":\n Result: " + status + "\nDescription: "
+                                + description);
+            }
         } catch (Exception e) {
             throw new RuntimeException("Error checking code of conduct", e);
         }
