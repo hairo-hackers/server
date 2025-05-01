@@ -13,11 +13,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class GitHubClient {
 
-    public String getDiscussionContent(final @NonNull DiscussionCreatedEvent event) {
-        Objects.requireNonNull(event, "event must not be null");
-        return getDiscussionContent(event.org(), event.repo(), event.discussionId());
-    }
-
     public String getDiscussionContent(final @NonNull String orgName, final @NonNull String repoName,
             final @NonNull String discussionId) {
         Objects.requireNonNull(orgName, "orgName must not be null");
@@ -39,6 +34,31 @@ public class GitHubClient {
             return node.get("body").asText();
         } catch (Exception e) {
             throw new RuntimeException("Error fetching discussion content for org: " + orgName + ", repo: " + repoName
+                    + ", discussionId: " + discussionId, e);
+        }
+    }
+
+    public String getDiscussionTitle(final @NonNull String orgName, final @NonNull String repoName,
+            final @NonNull String discussionId) {
+        Objects.requireNonNull(orgName, "orgName must not be null");
+        Objects.requireNonNull(repoName, "repoName must not be null");
+        Objects.requireNonNull(discussionId, "discussionId must not be null");
+        if (orgName.isBlank()) {
+            throw new IllegalArgumentException("orgName must not be blank");
+        }
+        if (repoName.isBlank()) {
+            throw new IllegalArgumentException("repoName must not be blank");
+        }
+        if (discussionId.isBlank()) {
+            throw new IllegalArgumentException("discussionId must not be blank");
+        }
+        try {
+            final URI uri = new URI("https://api.github.com/repos/" + orgName + "/" + repoName
+                    + "/discussions/" + discussionId);
+            final JsonNode node = executeGet(uri);
+            return node.get("title").asText();
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching discussion title for org: " + orgName + ", repo: " + repoName
                     + ", discussionId: " + discussionId, e);
         }
     }

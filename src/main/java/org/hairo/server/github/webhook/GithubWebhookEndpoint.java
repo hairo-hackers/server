@@ -2,7 +2,10 @@ package org.hairo.server.github.webhook;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.net.URI;
 import java.util.Objects;
+import org.hairo.server.comment.Comment;
+import org.hairo.server.comment.CommentHandler;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,11 +21,11 @@ public class GithubWebhookEndpoint {
     private final static Logger log = LoggerFactory.getLogger(GithubWebhookEndpoint.class);
     public static final String HUB_EVENT = "X-GitHub-Event";
 
-    private final GithubEventHandler githubEventHandler;
+    private final CommentHandler commentHandler;
 
     @Autowired
-    public GithubWebhookEndpoint(GithubEventHandler githubEventHandler) {
-        this.githubEventHandler = githubEventHandler;
+    public GithubWebhookEndpoint(CommentHandler commentHandler) {
+        this.commentHandler = commentHandler;
     }
 
     @PostMapping("/github/webhook")
@@ -31,19 +34,20 @@ public class GithubWebhookEndpoint {
         try {
             final ObjectMapper objectMapper = new ObjectMapper();
             final JsonNode jsonNode = objectMapper.readTree(body);
-
-            if (Objects.equals("discussion", eventType)) {
-                final String action = getAction(jsonNode);
-                if (Objects.equals(action, "created")) {
-                    final String orgName = getOrgName(jsonNode);
-                    final String repoName = getRepoName(jsonNode);
-                    final String discussionId = getDiscussionId(jsonNode);
-                    final DiscussionCreatedEvent event = new DiscussionCreatedEvent(orgName, repoName,
-                            discussionId);
-                    githubEventHandler.handleDiscussionCreatedEvent(event);
-                } else {
-                    log.info("Ignoring non-created action for discussion: {}", action);
-                }
+            final String action = getAction(jsonNode);
+            final GitHubWebhookEventTypes eventTypeEnum = GitHubWebhookEventTypes.of(eventType, action)
+                    .orElseThrow(() -> new IllegalArgumentException("Unknown event type: " + eventType));
+            if (eventTypeEnum == GitHubWebhookEventTypes.DISCUSSION_CREATED) {
+                final String title = getDiscussionTitle(jsonNode);
+                final String content = title + "\n" + getDiscussionText(jsonNode);
+                final URI url = getDiscussionUrl(jsonNode);
+                final Comment titleComment = new Comment(content, url);
+                commentHandler.handleComment(titleComment);
+            } else if (eventTypeEnum == GitHubWebhookEventTypes.DISCUSSION_COMMENT_CREATED) {
+                final String content = getDiscussionComment(jsonNode);
+                final URI url = getDiscussionCommentUrl(jsonNode);
+                final Comment titleComment = new Comment(content, url);
+                commentHandler.handleComment(titleComment);
             }
         } catch (Exception e) {
             throw new RuntimeException("Error in Github webhook", e);
@@ -56,6 +60,30 @@ public class GithubWebhookEndpoint {
             return jsonNode.get("action").asText();
         }
         throw new IllegalArgumentException("Action not found in JSON");
+    }
+
+    private String getDiscussionTitle(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("discussion") && jsonNode.get("discussion").has("title")) {
+            return jsonNode.get("discussion").get("title").asText();
+        }
+        throw new IllegalArgumentException("title not found in JSON");
+    }
+
+    private String getDiscussionText(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("discussion") && jsonNode.get("discussion").has("body")) {
+            return jsonNode.get("discussion").get("body").asText();
+        }
+        throw new IllegalArgumentException("comment not found in JSON");
+    }
+
+    private String getDiscussionComment(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("comment") && jsonNode.get("comment").has("body")) {
+            return jsonNode.get("comment").get("body").asText();
+        }
+        throw new IllegalArgumentException("comment not found in JSON");
     }
 
     private String getOrgName(final @NonNull JsonNode jsonNode) {
@@ -74,11 +102,27 @@ public class GithubWebhookEndpoint {
         throw new IllegalArgumentException("Repository full name not found in JSON");
     }
 
-    private String getDiscussionId(final @NonNull JsonNode jsonNode) {
+    private URI getDiscussionUrl(final @NonNull JsonNode jsonNode) {
         Objects.requireNonNull(jsonNode, "jsonNode must not be null");
-        if (jsonNode.has("discussion") && jsonNode.get("discussion").has("number")) {
-            return jsonNode.get("discussion").get("number").asText();
+        if (jsonNode.has("discussion") && jsonNode.get("discussion").has("html_url")) {
+            try {
+                return new URI(jsonNode.get("discussion").get("html_url").asText());
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing discussion comment URL", e);
+            }
         }
-        throw new IllegalArgumentException("Discussion ID not found in JSON");
+        throw new IllegalArgumentException("url not found in JSON");
+    }
+
+    private URI getDiscussionCommentUrl(final @NonNull JsonNode jsonNode) {
+        Objects.requireNonNull(jsonNode, "jsonNode must not be null");
+        if (jsonNode.has("comment") && jsonNode.get("comment").has("html_url")) {
+            try {
+                return new URI(jsonNode.get("comment").get("html_url").asText());
+            } catch (Exception e) {
+                throw new RuntimeException("Error parsing discussion comment URL", e);
+            }
+        }
+        throw new IllegalArgumentException("url not found in JSON");
     }
 }
