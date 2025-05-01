@@ -6,12 +6,27 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
 public class GitHubClient {
+
+    public Set<String> getAllUsersForOrg(final @NonNull String orgName) {
+        Objects.requireNonNull(orgName, "orgName must not be null");
+        if (orgName.isBlank()) {
+            throw new IllegalArgumentException("orgName must not be blank");
+        }
+        try {
+            final URI uri = new URI("https://api.github.com/orgs/" + orgName + "/members");
+            final JsonNode node = executeGet(uri);
+            return Set.of(node.findValuesAsText("login").toArray(new String[0]));
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching users for org: " + orgName, e);
+        }
+    }
 
     public String getDiscussionContent(final @NonNull String orgName, final @NonNull String repoName,
             final @NonNull String discussionId) {
@@ -86,5 +101,6 @@ public class GitHubClient {
             throw new RuntimeException("Error executing GET request to " + uri, e);
         }
     }
+
 
 }

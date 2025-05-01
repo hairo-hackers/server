@@ -4,6 +4,7 @@ import java.util.Optional;
 
 public enum GitHubWebhookEventTypes {
 
+    PR_CREATED("pull_request", "opened"),
     ISSUE_CREATED("issue", "opened"),
     ISSUE_COMMENT_CREATED("issue_comment", "created"),
     DISCUSSION_CREATED("discussion", "created"),
