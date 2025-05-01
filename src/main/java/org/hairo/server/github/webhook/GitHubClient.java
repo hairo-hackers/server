@@ -21,8 +21,7 @@ public class GitHubClient {
 
     @Value("${github.token}")
     private String token;
-
-
+    
     public Set<String> getAllUsersForOrg(final @NonNull String orgName) {
         Objects.requireNonNull(orgName, "orgName must not be null");
         if (orgName.isBlank()) {
