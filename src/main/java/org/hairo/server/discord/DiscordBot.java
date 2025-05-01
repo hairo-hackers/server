@@ -8,7 +8,6 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,7 +32,7 @@ public class DiscordBot {
         JDABuilder.createDefault(token)
                 .addEventListeners(new ListenerAdapter() {
                     @Override
-                    public void onReady(@NotNull ReadyEvent event) {
+                    public void onReady(ReadyEvent event) {
                         log.info("Discord bot is ready!");
                         jdaReference.set(event.getJDA());
                         event.getJDA().getTextChannels().forEach(ch -> {

@@ -2,8 +2,11 @@ package org.hairo.server.contribution;
 
 import java.net.URI;
 import java.util.Objects;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import org.hairo.server.discord.DiscordBot;
 import org.hairo.server.github.webhook.GitHubClient;
+import org.hairo.server.vertesia.VertesiaClient;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,10 +28,13 @@ public class ContributionHandler {
 
     private final DiscordBot discordBot;
 
+    private final VertesiaClient vertesiaClient;
+
     @Autowired
-    public ContributionHandler(final @NonNull GitHubClient gitHubClient, final @NonNull DiscordBot discordBot) {
+    public ContributionHandler(final @NonNull GitHubClient gitHubClient, final @NonNull DiscordBot discordBot, final @NonNull VertesiaClient vertesiaClient) {
         this.gitHubClient = Objects.requireNonNull(gitHubClient, "gitHubClient must not be null");
         this.discordBot = Objects.requireNonNull(discordBot, "discordBot must not be null");
+        this.vertesiaClient = Objects.requireNonNull(vertesiaClient, "vertesiaClient must not be null");
     }
 
     public void handleContribution(String title, String author, URI contributionUri) {
@@ -46,5 +52,9 @@ public class ContributionHandler {
                 discordBot.sendMessageToChannel(discordChannelId, message);
             }
         }
+    }
+
+    public void handleIssueComplexity(JsonNode githubJson, URI contributionUri) {
+        vertesiaClient.setIssueComplexity(githubJson, contributionUri);
     }
 }
