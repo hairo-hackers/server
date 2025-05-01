@@ -138,4 +138,16 @@ public class GitHubClient {
         }
     }
 
+    public JsonNode getUserInfo(String user) {
+        Objects.requireNonNull(user, "user must not be null");
+        if (user.isBlank()) {
+            throw new IllegalArgumentException("user must not be blank");
+        }
+        try {
+            final URI uri = new URI("https://api.github.com/users/" + user);
+            return executeGet(uri);
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching user info for: " + user, e);
+        }
+    }
 }
