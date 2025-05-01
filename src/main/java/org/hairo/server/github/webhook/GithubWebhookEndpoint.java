@@ -5,7 +5,6 @@ import static org.hairo.server.github.webhook.GitHubWebhookEventTypes.DISCUSSION
 import static org.hairo.server.github.webhook.GitHubWebhookEventTypes.ISSUE_COMMENT_CREATED;
 import static org.hairo.server.github.webhook.GitHubWebhookEventTypes.ISSUE_CREATED;
 import static org.hairo.server.github.webhook.GitHubWebhookEventTypes.PR_CREATED;
-import static org.hairo.server.github.webhook.GitHubWebhookEventTypes.of;
 import static org.hairo.server.github.webhook.GithubWebhookJsonParser.getAction;
 import static org.hairo.server.github.webhook.GithubWebhookJsonParser.getComment;
 import static org.hairo.server.github.webhook.GithubWebhookJsonParser.getCommentUrl;
@@ -63,39 +62,42 @@ public class GithubWebhookEndpoint {
             final ObjectMapper objectMapper = new ObjectMapper();
             final JsonNode jsonNode = objectMapper.readTree(body);
             final String action = getAction(jsonNode);
-            final GitHubWebhookEventTypes eventTypeEnum = of(eventType, action)
-                    .orElseThrow(() -> new IllegalArgumentException("Unknown event type: " + eventType));
-            if (eventTypeEnum == DISCUSSION_CREATED) {
-                final String content = getDiscussionTitle(jsonNode) + "\n" + getDiscussionText(jsonNode);
-                final URI url = getDiscussionUrl(jsonNode);
-                final Comment titleComment = new Comment(content, url);
-                commentHandler.handleComment(titleComment);
-                contributionHandler.handleContribution(getDiscussionTitle(jsonNode), getDiscussionAuthor(jsonNode),
-                        url);
-            } else if (eventTypeEnum == DISCUSSION_COMMENT_CREATED) {
-                final String content = getComment(jsonNode);
-                final URI url = getCommentUrl(jsonNode);
-                final Comment titleComment = new Comment(content, url);
-                commentHandler.handleComment(titleComment);
-            } else if (eventTypeEnum == ISSUE_CREATED) {
-                final String content = getIssueTitle(jsonNode) + "\n" + getIssueText(jsonNode);
-                final URI url = getIssueUrl(jsonNode);
-                final Comment titleComment = new Comment(content, url);
-                commentHandler.handleComment(titleComment);
-                contributionHandler.handleContribution(getIssueTitle(jsonNode), getIssueAuthor(jsonNode), url);
-            } else if (eventTypeEnum == ISSUE_COMMENT_CREATED) {
-                final String content = getComment(jsonNode);
-                final URI url = getCommentUrl(jsonNode);
-                final Comment titleComment = new Comment(content, url);
-                commentHandler.handleComment(titleComment);
-            } else if (eventTypeEnum == PR_CREATED) {
-                final String content = getPullRequestTitle(jsonNode) + "\n" + getPullRequestText(jsonNode);
-                final URI url = getPullRequestUrl(jsonNode);
-                final Comment titleComment = new Comment(content, url);
-                commentHandler.handleComment(titleComment);
-                contributionHandler.handleContribution(getPullRequestTitle(jsonNode), getPullRequestAuthor(jsonNode),
-                        url);
-            }
+            GitHubWebhookEventTypes.of(eventType, action).ifPresent(eventTypeEnum -> {
+                if (eventTypeEnum == DISCUSSION_CREATED) {
+                    final String content = getDiscussionTitle(jsonNode) + "\n" + getDiscussionText(jsonNode);
+                    final URI url = getDiscussionUrl(jsonNode);
+                    final Comment titleComment = new Comment(content, url);
+                    commentHandler.handleComment(titleComment);
+                    contributionHandler.handleContribution(getDiscussionTitle(jsonNode), getDiscussionAuthor(jsonNode),
+                            url);
+                } else if (eventTypeEnum == DISCUSSION_COMMENT_CREATED) {
+                    final String content = getComment(jsonNode);
+                    final URI url = getCommentUrl(jsonNode);
+                    final Comment titleComment = new Comment(content, url);
+                    commentHandler.handleComment(titleComment);
+                } else if (eventTypeEnum == ISSUE_CREATED) {
+                    final String content = getIssueTitle(jsonNode) + "\n" + getIssueText(jsonNode);
+                    final URI url = getIssueUrl(jsonNode);
+                    final Comment titleComment = new Comment(content, url);
+                    commentHandler.handleComment(titleComment);
+                    contributionHandler.handleContribution(getIssueTitle(jsonNode), getIssueAuthor(jsonNode), url);
+                } else if (eventTypeEnum == ISSUE_COMMENT_CREATED) {
+                    final String content = getComment(jsonNode);
+                    final URI url = getCommentUrl(jsonNode);
+                    final Comment titleComment = new Comment(content, url);
+                    commentHandler.handleComment(titleComment);
+                } else if (eventTypeEnum == PR_CREATED) {
+                    final String content = getPullRequestTitle(jsonNode) + "\n" + getPullRequestText(jsonNode);
+                    final URI url = getPullRequestUrl(jsonNode);
+                    final Comment titleComment = new Comment(content, url);
+                    commentHandler.handleComment(titleComment);
+                    contributionHandler.handleContribution(getPullRequestTitle(jsonNode),
+                            getPullRequestAuthor(jsonNode),
+                            url);
+                } else {
+                    log.warn("Unhandled GitHub event type: {} - {}", eventType, action);
+                }
+            });
         } catch (Exception e) {
             throw new RuntimeException("Error in Github webhook", e);
         }
