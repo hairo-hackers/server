@@ -1,6 +1,5 @@
 package org.hairo.server.contribution;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import java.net.URI;
 import java.util.Objects;
 import org.hairo.server.discord.DiscordBot;
@@ -36,11 +35,16 @@ public class ContributionHandler {
         log.info("Handling contribution: '{}' from '{}'", title, author);
         final boolean contributor = !gitHubClient.getAllUsersForOrg(HAIRO_HACKERS_ORG).contains(author);
         if (contributor) {
-            final String message = "New contribution by " + author + ": " + title + "\n" +
-                    "View it here: " + contributionUri.toString();
-            discordBot.sendMessageToChannel(discordChannelId, message);
+            final int contributionCount = gitHubClient.getContributionCount(author);
+            if (contributionCount > 0) {
+                final String message = "New contribution by " + author + ": " + title + "\n" +
+                        "View it here: " + contributionUri.toString();
+                discordBot.sendMessageToChannel(discordChannelId, message);
+            } else {
+                final String message = "First contribution by " + author + ": " + title + "\n" +
+                        "View it here: " + contributionUri.toString();
+                discordBot.sendMessageToChannel(discordChannelId, message);
+            }
         }
-        final JsonNode jsonNode = gitHubClient.doGraphQlQueryForFirstContribution();
-        log.info("GraphQL query result: {}", jsonNode);
     }
 }

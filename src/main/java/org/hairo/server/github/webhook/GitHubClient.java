@@ -113,19 +113,13 @@ public class GitHubClient {
         }
     }
 
-    public JsonNode doGraphQlQueryForFirstContribution() {
+    public int getContributionCount(String author) {
         try {
-            final String query = """
-                    {
-                      "query": "query CommitCount($q:String!){search(query:$q,type:COMMIT){commitCount}}",
-                      "variables": {
-                        "q": "repo:hairo-hackers/* author:alice-blockchain committer-date:>=2024-05-01"
-                      }
-                    }""";
             final HttpClient client = HttpClient.newHttpClient();
             final HttpRequest request = HttpRequest.newBuilder()
-                    .POST(java.net.http.HttpRequest.BodyPublishers.ofString(query))
-                    .uri(new URI("https://api.github.com/graphql"))
+                    .uri(new URI(
+                            "https://api.github.com/search/commits?q=repo:hairo-hackers/server+author:" + author
+                                    + "+committer-date:>=2023-05-01"))
                     .header("Accept", "application/vnd.github.v3+json")
                     .header("Authorization", "Bearer " + token)
                     .header("User-Agent", "hAIro-Server")
@@ -139,7 +133,7 @@ public class GitHubClient {
                         }
                     }).get(10, TimeUnit.SECONDS);
             final ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readTree(body);
+            return objectMapper.readTree(body).get("total_count").asInt();
         } catch (Exception e) {
             throw new RuntimeException("Error executing GraphQL request", e);
         }
