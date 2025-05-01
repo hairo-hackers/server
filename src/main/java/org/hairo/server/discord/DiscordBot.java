@@ -35,6 +35,9 @@ public class DiscordBot {
                     @Override
                     public void onReady(@NotNull ReadyEvent event) {
                         jdaReference.set(event.getJDA());
+                        event.getJDA().getTextChannels().forEach(ch -> {
+                            log.info("Available channel: " + ch.getName() + " → " + ch.getId());
+                        });
                     }
                 })
                 .build();
