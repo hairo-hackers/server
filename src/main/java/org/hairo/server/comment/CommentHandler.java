@@ -1,7 +1,7 @@
 package org.hairo.server.comment;
 
 import java.util.Objects;
-import org.hairo.server.discord.DiscordBot;
+import org.hairo.server.vertesia.VertesiaClient;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +13,17 @@ public class CommentHandler {
 
     private final static Logger log = LoggerFactory.getLogger(CommentHandler.class);
 
-    private final DiscordBot discordBot;
+    private final VertesiaClient client;
 
     @Autowired
-    public CommentHandler(DiscordBot discordBot) {
-        this.discordBot = discordBot;
+    public CommentHandler(VertesiaClient client) {
+        this.client = client;
     }
 
     public void handleComment(final @NonNull Comment comment) {
         Objects.requireNonNull(comment, "comment must not be null");
         log.info("Handling comment: '{}' from '{}'", comment.comment(), comment.source());
         final String message = "New comment :" + comment.comment() + "\nsee " + comment.source();
-        discordBot.sendMessageToChannel(message);
+        client.checkCodeOfConduct(message, comment.source());
     }
 }
