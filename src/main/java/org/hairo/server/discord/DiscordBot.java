@@ -1,5 +1,6 @@
 package org.hairo.server.discord;
 
+import jakarta.annotation.PostConstruct;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 import net.dv8tion.jda.api.JDA;
@@ -8,11 +9,15 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.session.ReadyEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DiscordBot {
+
+    private final static Logger log = LoggerFactory.getLogger(DiscordBot.class);
 
     @Value("${discord.token}")
     private String token;
@@ -22,7 +27,9 @@ public class DiscordBot {
 
     private final AtomicReference<JDA> jdaReference = new AtomicReference<JDA>();
 
-    public DiscordBot() {
+    @PostConstruct
+    private void init() {
+        log.info("Initializing Discord bot");
         JDABuilder.createDefault(token)
                 .addEventListeners(new ListenerAdapter() {
                     @Override
